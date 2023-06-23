@@ -7,20 +7,17 @@ function handler(event, context, callback) {
   const [targetHandlerFile, targetHandlerFunction] = event.targetHandler.split(".");
   const target = require(path.resolve(__dirname, '../..', event.location, targetHandlerFile));
 
-  // call the target function
-  target[targetHandlerFunction](event.body, context, (error, response) => {
-    if (error) {
+  target[targetHandlerFunction](event.body).then((response) => {
+      callback(null, {
+        StatusCode: 200,
+        Payload: JSON.stringify(response),
+      });
+  }).catch((error) => {
       callback(null, {
         StatusCode: 500,
         FunctionError: 'Handled',
         Payload: serializeError(error)
       })
-    } else {
-      callback(null, {
-        StatusCode: 200,
-        Payload: JSON.stringify(response)
-      })
-    }
   });
 }
 
